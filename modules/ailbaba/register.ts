@@ -59,90 +59,9 @@ export const fillRegistrationForm = async (account: Account) => {
       logger.info(`Clicking at coordinates: (${x}, ${y})`)
     }
 
-    // 模拟真实的键盘输入
-    const simulateTyping = async (element: HTMLElement, text: string) => {
-      element.focus()
-      await delay(getRandomNumber(100, 300))
-
-      for (const char of text) {
-        // 按键按下事件
-        element.dispatchEvent(new KeyboardEvent('keydown', {
-          key: char,
-          code: `Key${char.toUpperCase()}`,
-          bubbles: true
-        }))
-
-        // 输入字符
-        element.dispatchEvent(new InputEvent('beforeinput', {
-          bubbles: true,
-          data: char,
-          inputType: 'insertText'
-        }))
-
-        const input = element as HTMLInputElement
-        input.value += char
-
-        element.dispatchEvent(new Event('input', { bubbles: true }))
-
-        // 按键释放事件
-        element.dispatchEvent(new KeyboardEvent('keyup', {
-          key: char,
-          code: `Key${char.toUpperCase()}`,
-          bubbles: true
-        }))
-
-        await delay(getRandomNumber(100, 300))
-      }
-
-      element.dispatchEvent(new Event('change', { bubbles: true }))
-      await delay(getRandomNumber(100, 200))
-      element.blur()
-    }
-
-    const simulateGlobalTyping = async (text: string) => {
-      await delay(getRandomNumber(100, 300))
-
-      for (const char of text) {
-        // 按键按下事件
-        document.dispatchEvent(new KeyboardEvent('keydown', {
-          key: char,
-          code: `Key${char.toUpperCase()}`,
-          bubbles: true,
-          composed: true
-        }))
-
-        // 输入字符事件
-        document.dispatchEvent(new InputEvent('beforeinput', {
-          bubbles: true,
-          composed: true,
-          data: char,
-          inputType: 'insertText'
-        }))
-
-        // 模拟文本输入
-        document.dispatchEvent(new Event('input', {
-          bubbles: true,
-          composed: true
-        }))
-
-        // 按键释放事件
-        document.dispatchEvent(new KeyboardEvent('keyup', {
-          key: char,
-          code: `Key${char.toUpperCase()}`,
-          bubbles: true,
-          composed: true
-        }))
-
-        await delay(getRandomNumber(100, 300))
-      }
-
-      await delay(getRandomNumber(100, 200))
-    }
-
     async function simulateType(elementSelector: string, text: string, options = {delay: 100}) {
       // 1. 获取目标元素
-      const element = document.querySelector(elementSelector) as HTMLElement;
-      console.log('element:', element)
+      const element = await waitForElement(elementSelector) as HTMLInputElement
       if (!element) throw new Error('Element not found');
 
       // 2. 聚焦元素
@@ -155,26 +74,25 @@ export const fillRegistrationForm = async (account: Account) => {
 
       // 4. 逐个字符输入
       for (const char of text) {
-        console.log('char:', char)
-          // 触发键盘事件
-          const eventOpts = { bubbles: true };
-          element.dispatchEvent(new KeyboardEvent('keydown', eventOpts));
-          element.dispatchEvent(new KeyboardEvent('keypress', eventOpts));
+        // 触发键盘事件
+        const eventOpts = { bubbles: true };
+        element.dispatchEvent(new KeyboardEvent('keydown', eventOpts));
+        element.dispatchEvent(new KeyboardEvent('keypress', eventOpts));
 
-          // 更新元素内容
-          if (isInput || isTextarea) {
-              (element as HTMLInputElement).value += char;
-              element.dispatchEvent(new Event('input', eventOpts));
-          } else if (isContentEditable) {
-              element.textContent += char;
-          }
+        // 更新元素内容
+        if (isInput || isTextarea) {
+          (element as HTMLInputElement).value += char;
+          element.dispatchEvent(new Event('input', eventOpts));
+        } else if (isContentEditable) {
+          element.textContent += char;
+        }
 
-          element.dispatchEvent(new KeyboardEvent('keyup', eventOpts));
+        element.dispatchEvent(new KeyboardEvent('keyup', eventOpts));
 
-          // 处理延迟
-          await new Promise(resolve =>
-              setTimeout(resolve, options.delay)
-          );
+        // 处理延迟
+        await new Promise(resolve =>
+          setTimeout(resolve, options.delay)
+        );
       }
 
       // 5. 触发最终变化事件
@@ -189,8 +107,6 @@ export const fillRegistrationForm = async (account: Account) => {
     await simulateType('div[name="countryCode"] input.ant-select-selection-search-input', account.country)
 
     await delay(2000)
-
-    return;
 
     // 选择国家
     const options = document.querySelectorAll('.rc-virtual-list .ant-select-item.ant-select-item-option .il-select-item > span')
@@ -218,8 +134,7 @@ export const fillRegistrationForm = async (account: Account) => {
     }
 
     for (const [name, value] of Object.entries(formFields)) {
-      const input = await waitForElement(`input[name="${name}"]`) as HTMLInputElement
-      await simulateTyping(input, value)
+      await simulateType(`input[name="${name}"]`, value)
     }
 
     logger.info('表单填写完成')

@@ -13,6 +13,7 @@ export default defineContentScript({
       waitForElement('.tnh-button.tnh-sign-up')
         .then(async (element) => {
           const registerBtn = element as HTMLButtonElement;
+          console.log('registerBtn', registerBtn)
           await delay(2000);
           registerBtn.click();
         })
@@ -24,7 +25,7 @@ export default defineContentScript({
       fillRegistrationForm({
         email: 'qweqwe@qwq.com',
         password: 'qweqwe',
-        country: '美国',
+        country: 'United States',
         company: 'asaasd',
         firstName: 'asasa',
         lastName: 'qwqwq',

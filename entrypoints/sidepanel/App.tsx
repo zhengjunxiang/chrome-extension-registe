@@ -14,7 +14,8 @@ function App() {
     // 打开指定数量的标签页
     for (let i = 0; i < num; i++) {
       chrome.tabs.create({
-        url: 'https://www.alibaba.com',
+        // url: 'https://www.alibaba.com',
+        url: 'https://ipinfo.io/json',
         active: false // 在后台打开标签页
       });
     }

@@ -8,7 +8,12 @@ export default defineConfig({
     manifest_version: 3,
     name: 'Auto Tab Opener',
     version: '1.0',
-    permissions: ["activeTab", "scripting", "sidePanel", "storage", "tabs"],
+    permissions: [
+      "activeTab", "scripting", "sidePanel", "storage", "tabs",
+    "proxy",
+    "webRequest",
+    "webRequestAuthProvider",
+    "<all_urls>"],
     // host_permissions: ['*://*.alibaba.com/*'],
     host_permissions: ["*://*/*"],
   },

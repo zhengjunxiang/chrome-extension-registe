@@ -1,6 +1,6 @@
 import { waitForElement, delay } from '../utils';
 import logger from '../utils/logger';
-import { fillRegistrationForm } from '@/modules/ailbaba/register.ts';
+import { fillRegistrationForm } from '@/modules/ailbaba/register';
 
 export default defineContentScript({
   matches: ['*://*.alibaba.com/*'],

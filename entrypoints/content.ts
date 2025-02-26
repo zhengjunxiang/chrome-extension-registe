@@ -1,22 +1,23 @@
+import {browser} from "wxt/browser";
 import { waitForElement, delay } from '../utils';
 import logger from '../utils/logger';
 import { fillRegistrationForm } from '@/modules/ailbaba/register';
 
-const getEmails = () => {
-  const stored = localStorage.getItem('alibaba_emails');
-  return stored ? JSON.parse(stored) : [];
+const getEmails = async () => {
+  const stored = await browser.storage.local.get('alibaba_emails');
+  return stored ? JSON.parse(stored.alibaba_emails as string) : [];
 };
 
 let emailList: string[] = [];
 
 // Add message listener
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   logger.info('Content script received message:', message);
 
   if (message.type === 'SET_EMAILS') {
     emailList = message.data;
     // Store emails in localStorage
-    localStorage.setItem('alibaba_emails', JSON.stringify(emailList));
+    await browser.storage.local.set({alibaba_emails: JSON.stringify(emailList)})
     logger.info('Updated email list:', emailList);
     sendResponse({ success: true });
   }
@@ -24,6 +25,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // Return true to indicate async response
   return true;
 });
+
+  browser.runtime.onMessage.addListener(async (message, sender, sendResponse: (message: any) => void) => {
+    console.log("content:")
+    console.log('message:', message);
+  });
 
 export default defineContentScript({
   matches: ['*://*.alibaba.com/*'],
@@ -47,7 +53,7 @@ export default defineContentScript({
     } else if (hostname.includes('login.alibaba.com')) {
       await delay(2000);
 
-      emailList = getEmails(); // Refresh emails from storage
+      emailList = await getEmails(); // Refresh emails from storage
       logger.info('Retrieved email list:', emailList);
       const email = emailList.shift();
       // 在注册页面填写表单

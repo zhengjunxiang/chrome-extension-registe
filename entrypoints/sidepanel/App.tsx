@@ -1,3 +1,4 @@
+import {browser} from "wxt/browser";
 import { useState } from 'react';
 import './App.css';
 
@@ -21,6 +22,12 @@ function App() {
         url: 'https://www.alibaba.com',
         active: false
       });
+
+      let response = await browser.runtime.sendMessage({
+        eventType: 'SET_EMAILS11',
+        content: emailList
+      });
+        console.log('response:', response);
 
       // 等待页面加载完成后发送消息
       chrome.tabs.onUpdated.addListener(function listener(tabId, info) {

@@ -60,21 +60,21 @@ export default defineBackground({
     };
 
     // 监听标签页创建事件
-    chrome.tabs.onCreated.addListener(async (tab) => {
-      console.log(`New tab created with id: ${tab.id}`);
-      await applyProxySettings();
-    });
+    // chrome.tabs.onCreated.addListener(async (tab) => {
+    //   console.log(`New tab created with id: ${tab.id}`);
+    //   await applyProxySettings();
+    // });
 
-    // 监听标签页更新事件（可选：当标签页URL改变时也更新代理）
-    chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-      if (changeInfo.url) {
-        console.log(`Tab ${tabId} navigated to: ${changeInfo.url}`);
-        await applyProxySettings();
-      }
-    });
+    // // 监听标签页更新事件（可选：当标签页URL改变时也更新代理）
+    // chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+    //   if (changeInfo.url) {
+    //     console.log(`Tab ${tabId} navigated to: ${changeInfo.url}`);
+    //     await applyProxySettings();
+    //   }
+    // });
 
     // 初始应用代理设置
-    applyProxySettings();
+    // applyProxySettings();
 
     console.log('Background script main function completed'); // 添加完成日志
 

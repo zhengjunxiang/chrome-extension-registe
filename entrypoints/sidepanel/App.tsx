@@ -3,6 +3,7 @@ import './App.css';
 
 function App() {
   const [tabNum, setTabNum] = useState('0');
+  const [emails, setEmails] = useState('qweqwe11@qwq.com');
 
   const start = async () => {
     const num = parseInt(tabNum);
@@ -11,12 +12,38 @@ function App() {
       return;
     }
 
-    // 打开指定数量的标签页
+    // Split emails into array and remove empty lines
+    const emailList = emails.split('\n').filter(email => email.trim());
+
+    // 打开新标签页并发送消息
     for (let i = 0; i < num; i++) {
-      chrome.tabs.create({
-        // url: 'https://www.alibaba.com',
-        url: 'https://ipinfo.io/json',
-        active: false // 在后台打开标签页
+      const tab = await chrome.tabs.create({
+        url: 'https://www.alibaba.com',
+        active: false
+      });
+
+      // 等待页面加载完成后发送消息
+      chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
+        if (tabId === tab.id && info.status === 'complete') {
+          // Add timeout to ensure content script is loaded
+          setTimeout(() => {
+            if (!tab.id) return;
+            chrome.tabs.sendMessage(
+              tab.id,
+              { type: 'SET_EMAILS', data: emailList },
+              (response) => {
+                if (chrome.runtime.lastError) {
+                  logger.error('Error sending message:', chrome.runtime.lastError);
+                  return;
+                }
+                logger.info('Message sent successfully:', response);
+              }
+            );
+          }, 1200);
+
+          // 移除监听器
+          chrome.tabs.onUpdated.removeListener(listener);
+        }
       });
     }
   }
@@ -25,11 +52,20 @@ function App() {
     setTabNum(e.target.value);
   }
 
+  const onChangeEmails = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setEmails(e.target.value);
+  }
+
   return (
     <>
       <h1>WXT + React</h1>
       <div className="card">
-      <input
+        <textarea
+          value={emails}
+          onChange={onChangeEmails}
+          placeholder="输入邮箱"
+        />
+        <input
           type="number"
           min="1"
           value={tabNum}

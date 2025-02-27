@@ -8,6 +8,18 @@ export default defineBackground(() => {
     sendResponse({ success_background: true })
   });
 
+  // 清理标签页数据
+  // const cleanupTabData = async (tabId: number) => {
+  //   const result = await browser.storage.local.get('tab_emails');
+  //   const tabEmails: any = result.tab_emails || {};
+  //   delete tabEmails[tabId];
+  //   await browser.storage.local.set({ tab_emails: tabEmails });
+  // };
+
+  // browser.tabs.onRemoved.addListener((tabId) => {
+  //   cleanupTabData(tabId);
+  // });
+
   // 创建代理配置生成函数
   // const getProxyConfig = () => ({
   //   host: 'brd.superproxy.io',

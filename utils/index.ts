@@ -38,6 +38,69 @@ export const simulateMouseClick = async (elementSelector: string) => {
   }))
 }
 
+// 生成随机延迟时间
+const getRandomDelay = (min: number, max: number): number => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+/**
+ * 模拟用户在输入框中输入文本
+ * @param selector 输入框的CSS选择器
+ * @param text 要输入的文本
+ */
+export const simulateUserTyping = async (selector: string, text: string) => {
+  const element = document.querySelector(selector) as HTMLInputElement;
+  if (!element) {
+    throw new Error(`Element with selector "${selector}" not found`);
+  }
+
+  // 触发焦点事件
+  element.focus();
+  await delay(getRandomDelay(100, 300));
+
+  // 逐个字符输入
+  for (const char of text) {
+    // 按键按下事件
+    element.dispatchEvent(new KeyboardEvent('keydown', {
+      key: char,
+      code: `Key${char.toUpperCase()}`,
+      bubbles: true,
+      cancelable: true
+    }));
+
+    // 输入事件
+    element.dispatchEvent(new InputEvent('beforeinput', {
+      bubbles: true,
+      cancelable: true,
+      data: char,
+      inputType: 'insertText'
+    }));
+
+    // 更新输入框的值
+    element.value += char;
+
+    // 触发输入改变事件
+    element.dispatchEvent(new Event('input', { bubbles: true }));
+
+    // 按键抬起事件
+    element.dispatchEvent(new KeyboardEvent('keyup', {
+      key: char,
+      code: `Key${char.toUpperCase()}`,
+      bubbles: true,
+      cancelable: true
+    }));
+
+    // 随机延迟模拟真实输入速度
+    await delay(getRandomDelay(50, 150));
+  }
+  // 触发change事件
+  element.dispatchEvent(new Event('change', { bubbles: true }));
+
+  // 失去焦点
+  await delay(getRandomDelay(100, 200));
+  element.blur();
+};
+
 export async function simulateType(elementSelector: string, text: string, options = {delay: 100}) {
   // 1. 获取目标元素
   const element = await waitForElement(elementSelector) as HTMLInputElement
@@ -69,13 +132,13 @@ export async function simulateType(elementSelector: string, text: string, option
     element.dispatchEvent(new KeyboardEvent('keyup', eventOpts));
 
     // 处理延迟
-    await new Promise(resolve =>
-      setTimeout(resolve, options.delay)
-    );
+    await delay(getRandomDelay(100, 200));
   }
 
   // 5. 触发最终变化事件
   element.dispatchEvent(new Event('change', { bubbles: true }));
+  await delay(getRandomDelay(100, 200));
+  element.blur();
 }
 
 export const waitForElement = (selector: string, timeout = 60000): Promise<HTMLElement> => {

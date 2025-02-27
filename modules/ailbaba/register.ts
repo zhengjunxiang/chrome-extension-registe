@@ -3,6 +3,7 @@ import {
   waitForElement,
   simulateMouseClick,
   simulateType,
+  simulateUserTyping,
 } from '../../utils'
 import logger from '../../utils/logger'
 
@@ -24,18 +25,18 @@ export const fillRegistrationForm = async (account: Account) => {
     await delay(1000)
 
     // 使用新的模拟点击方法
-    await simulateMouseClick('div[name="countryCode"]')
+    // await simulateMouseClick('div[name="countryCode"]')
     await delay(1000)
 
     // 寻找并使用实际的搜索输入框
-    await simulateType('div[name="countryCode"] input.ant-select-selection-search-input', account.country)
+    // await simulateType('div[name="countryCode"] input.ant-select-selection-search-input', account.country)
 
     await delay(2000);
 
     // 选择国家
-    (Array.from(document.querySelectorAll('.rc-virtual-list .ant-select-item.ant-select-item-option .il-select-item > span')).find(opt =>
-      opt.textContent === account.country || opt.textContent?.includes(account.country)
-    ) as HTMLElement)?.click()
+    // (Array.from(document.querySelectorAll('.rc-virtual-list .ant-select-item.ant-select-item-option .il-select-item > span')).find(opt =>
+    //   opt.textContent === account.country || opt.textContent?.includes(account.country)
+    // ) as HTMLElement)?.click()
 
     // 选择 trade role
     const tradeRole = await waitForElement('.ant-radio-group .ant-radio-wrapper:nth-child(1)')
@@ -52,10 +53,16 @@ export const fillRegistrationForm = async (account: Account) => {
       'phoneAreaCode': account.phoneAreaCode,
       'phoneNumber': account.phoneNumber
     }
+    // await simulateMouseClick(`input[name="email"]`)
+    const emailDom = await waitForElement(`input[name="email"]`)
+    console.log('emailDom:', emailDom)
+    emailDom.value = 'qwqwqqww'
+    // await simulateUserTyping(`input[name="email"]`, 'value')
 
-    for (const [name, value] of Object.entries(formFields)) {
-      await simulateType(`input[name="${name}"]`, value)
-    }
+    // for (const [name, value] of Object.entries(formFields)) {
+    //   await simulateUserTyping(`input[name="${name}"]`, value)
+    //   await delay(1000);
+    // }
 
     await simulateMouseClick('input[name="memberAgreement"]')
     await delay(1000)

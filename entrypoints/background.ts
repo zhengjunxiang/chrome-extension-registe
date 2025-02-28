@@ -3,9 +3,17 @@ import {browser} from "wxt/browser";
 export default defineBackground(() => {
 
   // 在插件后台输出日志
-  browser.runtime.onMessage.addListener(async (message, sender, sendResponse: (message: any) => void) => {
-    console.log('-- background browser.runtime.onMessage message:', message);
-    sendResponse({ success_background: true })
+  // browser.runtime.onMessage.addListener(async (message, sender, sendResponse: (message: any) => void) => {
+  //   console.log('-- background browser.runtime.onMessage message:', message);
+  //   sendResponse({ success_background: true })
+  // });
+
+  browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'GET_TAB_ID') {
+      // sender.tab contains the tab that sent the message
+      sendResponse({ tabId: sender.tab?.id });
+    }
+    return true;
   });
 
   // 清理标签页数据

@@ -22,20 +22,22 @@ import { fillRegistrationForm } from '@/modules/ailbaba/register';
 //   await browser.storage.local.set({ tab_emails: tabEmails });
 // };
 
-// 获取当前标签页 ID
-// const getCurrentTabId = async (): Promise<number> => {
-//   try {
-//     return new Promise((resolve) => {
-//       chrome.runtime.sendMessage({ type: 'GET_TAB_ID' }, (response) => {
-//         resolve(response.tabId);
-//       });
-//     });
-//   } catch (error) {
-//     console.error('Error getting tab ID:', error);
-//     return 0;
-//   }
-// };
 
+// 获取当前标签页 ID
+const getCurrentTabId = (): Promise<number> => {
+  return new Promise((resolve) => {
+    browser.runtime.sendMessage({ type: 'GET_TAB_ID' }, (response) => {
+      console.log('--response', response)
+      if (response && response.tabId) {
+        logger.info('Got tab ID:', response.tabId);
+        resolve(response.tabId);
+      } else {
+        logger.error('Failed to get tab ID');
+        resolve(0);
+      }
+    });
+  });
+};
 let email: string = '';
 
 browser.runtime.onMessage.addListener(async (message: any, sender, sendResponse: (message: any) => void) => {
@@ -54,6 +56,10 @@ export default defineContentScript({
   runAt: 'document_idle',
   main: async () => {
     const hostname = window.location.hostname;
+
+    const tabId = await getCurrentTabId();
+
+    alert(hostname + 'content tabId:' + tabId)
 
     if (hostname.includes('www.alibaba.com')) {
       // 在主页点击注册按钮

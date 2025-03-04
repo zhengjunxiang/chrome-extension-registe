@@ -3,12 +3,7 @@ import {browser} from "wxt/browser";
 export default defineBackground(() => {
 
   // 在插件后台输出日志
-  // browser.runtime.onMessage.addListener(async (message, sender, sendResponse: (message: any) => void) => {
-  //   console.log('-- background browser.runtime.onMessage message:', message);
-  //   sendResponse({ success_background: true })
-  // });
-
-  browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  browser.runtime.onMessage.addListener((message: any, sender, sendResponse) => {
     if (message.type === 'GET_TAB_ID') {
       // sender.tab contains the tab that sent the message
       sendResponse({ tabId: sender.tab?.id });
@@ -52,12 +47,12 @@ export default defineBackground(() => {
   //     }
   //   };
 
-  //   // 移除之前的认证监听器
+    // 移除之前的认证监听器
   //   if (chrome.webRequest.onAuthRequired.hasListener(authHandler)) {
   //     chrome.webRequest.onAuthRequired.removeListener(authHandler);
   //   }
 
-  //   // 设置新的认证信息
+    // 设置新的认证信息
   //   const authHandler = (details: any, callbackFn: any) => {
   //     callbackFn({
   //       authCredentials: {
@@ -67,14 +62,14 @@ export default defineBackground(() => {
   //     });
   //   };
 
-  //   // 添加新的认证监听器
+    // 添加新的认证监听器
   //   chrome.webRequest.onAuthRequired.addListener(
   //     authHandler,
   //     { urls: ["<all_urls>"] },
   //     ['asyncBlocking']
   //   );
 
-  //   // 应用新的代理设置
+    // 应用新的代理设置
   //   return new Promise((resolve) => {
   //     chrome.proxy.settings.set(
   //       { value: config, scope: 'regular' },
@@ -92,7 +87,7 @@ export default defineBackground(() => {
   //   await applyProxySettings();
   // });
 
-  // // 监听标签页更新事件（可选：当标签页URL改变时也更新代理）
+  // 监听标签页更新事件（可选：当标签页URL改变时也更新代理）
   // chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   //   if (changeInfo.url) {
   //     console.log(`Tab ${tabId} navigated to: ${changeInfo.url}`);

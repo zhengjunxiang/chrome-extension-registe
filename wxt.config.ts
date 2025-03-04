@@ -10,10 +10,7 @@ export default defineConfig({
     version: '1.0',
     permissions: [
       "activeTab", "scripting", "sidePanel", "storage", "tabs",
-    "proxy",
-    "webRequest",
-    "webRequestAuthProvider",
-    "<all_urls>"],
+    ],
     // host_permissions: ['*://*.alibaba.com/*'],
     host_permissions: ["*://*/*"],
   },

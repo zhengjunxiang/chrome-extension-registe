@@ -1,36 +1,39 @@
 // 模拟真实的鼠标移动和点击
-export const simulateMouseClick = async (elementSelector: string | HTMLInputElement) => {
+export const simulateMouseClick = async (elementSelector: string | any) => {
   const element = typeof elementSelector === 'string'
     ? await waitForElement(elementSelector) as HTMLInputElement
     : elementSelector
   if (!element) throw new Error('Element not found');
+  console.log('-- simulateMouseClick-element', element)
   const rect = element.getBoundingClientRect()
   const x = rect.left + rect.width / 2
   const y = rect.top + rect.height / 2
 
+  console.log('-- simulateMouseClick-rect', rect)
+
   // 在页面特定位置触发点击事件序列
-  document.elementFromPoint(x, y)?.dispatchEvent(new MouseEvent('mouseover', {
-    bubbles: true,
-    clientX: x,
-    clientY: y,
-    view: window
-  }))
-  await delay(getRandomNumber(100, 300))
+  // document.elementFromPoint(x, y)?.dispatchEvent(new MouseEvent('mouseover', {
+  //   bubbles: true,
+  //   clientX: x,
+  //   clientY: y,
+  //   view: window
+  // }))
+  // await delay(getRandomNumber(100, 300))
 
-  document.elementFromPoint(x, y)?.dispatchEvent(new MouseEvent('mousedown', {
-    bubbles: true,
-    clientX: x,
-    clientY: y,
-    view: window
-  }))
-  await delay(getRandomNumber(50, 150))
+  // document.elementFromPoint(x, y)?.dispatchEvent(new MouseEvent('mousedown', {
+  //   bubbles: true,
+  //   clientX: x,
+  //   clientY: y,
+  //   view: window
+  // }))
+  // await delay(getRandomNumber(50, 150))
 
-  document.elementFromPoint(x, y)?.dispatchEvent(new MouseEvent('mouseup', {
-    bubbles: true,
-    clientX: x,
-    clientY: y,
-    view: window
-  }))
+  // document.elementFromPoint(x, y)?.dispatchEvent(new MouseEvent('mouseup', {
+  //   bubbles: true,
+  //   clientX: x,
+  //   clientY: y,
+  //   view: window
+  // }))
 
   document.elementFromPoint(x, y)?.dispatchEvent(new MouseEvent('click', {
     bubbles: true,
@@ -40,11 +43,11 @@ export const simulateMouseClick = async (elementSelector: string | HTMLInputElem
   }))
 }
 
-// 生成随机延迟时间
-const getRandomDelay = (min: number, max: number): number => {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-};
-
+/**
+ * 模拟用户在输入框中输入文本
+ * @param selector 输入框的CSS选择器
+ * @param text 要输入的文本
+ */
 export async function simulateType(elementSelector: string | HTMLInputElement, text: string, options = {delay: 100}) {
   // 1. 获取目标元素
   const element = typeof elementSelector === 'string'
@@ -78,12 +81,12 @@ export async function simulateType(elementSelector: string | HTMLInputElement, t
     element.dispatchEvent(new KeyboardEvent('keyup', eventOpts));
 
     // 处理延迟
-    await delay(getRandomDelay(100, 200));
+    await delay(100);
   }
 
   // 5. 触发最终变化事件
   element.dispatchEvent(new Event('change', { bubbles: true }));
-  await delay(getRandomDelay(100, 200));
+  await delay(100);
   element.blur();
 }
 

@@ -1,35 +1,38 @@
 import {browser} from "wxt/browser";
 import { waitForElement, delay } from '../utils';
 import logger from '../utils/logger';
-import { fillRegistrationForm } from '@/modules/ailbaba/register';
+import {
+  fillRegistrationForm,
+  handleRegistrationSlider,
+  handleVerificationCode,
+} from '@/modules/ailbaba/register';
+import {
+  getVerificationCodeFromOutlook,
+} from '@/modules/ailbaba';
 
 // 获取当前标签页的 email
-// const getStoredEmail = async () => {
-//   const tabId = await getCurrentTabId();
-//   const result = await browser.storage.local.get('tab_emails');
-//   const tabEmails: any = result.tab_emails;
-//   return tabEmails[tabId] || '';
-// };
+const getStoredEmail = async () => {
+  console.log('-- getStoredEmail')
+  const tabId = await getCurrentTabId();
+  const result = await browser.storage.local.get('tab_emails');
+  const tabEmails: any = result.tab_emails;
+  return tabEmails[tabId] || '';
+};
 
 // 保存 email 到对应的标签页
-// const saveEmail = async (email: string) => {
-//   const tabId = await getCurrentTabId();
-//   console.log('-- content saveEmail tabId:', tabId)
-//   alert('content saveEmail tabId:' + tabId)
-//   const result = await browser.storage.local.get('tab_emails');
-//   const tabEmails: any = result.tab_emails || {};
-//   tabEmails[tabId] = email;
-//   await browser.storage.local.set({ tab_emails: tabEmails });
-// };
-
+const saveEmail = async (email: string) => {
+  const tabId = await getCurrentTabId();
+  const result = await browser.storage.local.get('tab_emails');
+  const tabEmails: any = result.tab_emails || {};
+  tabEmails[tabId] = email;
+  await browser.storage.local.set({ tab_emails: tabEmails });
+};
 
 // 获取当前标签页 ID
 const getCurrentTabId = (): Promise<number> => {
   return new Promise((resolve) => {
-    browser.runtime.sendMessage({ type: 'GET_TAB_ID' }, (response) => {
-      console.log('--response', response)
+    browser.runtime.sendMessage({ type: 'GET_TAB_ID' }).then((response: any) => {
       if (response && response.tabId) {
-        logger.info('Got tab ID:', response.tabId);
         resolve(response.tabId);
       } else {
         logger.error('Failed to get tab ID');
@@ -38,28 +41,38 @@ const getCurrentTabId = (): Promise<number> => {
     });
   });
 };
-let email: string = '';
 
 browser.runtime.onMessage.addListener(async (message: any, sender, sendResponse: (message: any) => void) => {
   if (message.type === 'SET_EMAILS') {
-    email = message.data
-    // await saveEmail(email);
-    console.log('-- content Received email:', email)
-    sendResponse({ success: true, message: 'Email received' })
+    sendResponse({ success: true, message: 'Email received' });
+    // 使用 Promise 处理异步操作
+    saveEmail(message.data)
+      .catch((error) => {
+        console.error('Failed to save email:', error);
+      });
+    return true; // 表明会异步调用 sendResponse
   }
-  // 必须返回 true 以支持异步响应
-  return true
 });
+
+// 在 background script 中执行登录
+const getAccessToken = async (clientId: string): Promise<string> => {
+  const response: any = await browser.runtime.sendMessage({
+    type: 'LOGIN',
+    clientId
+  });
+
+  if (!response.success) {
+    throw new Error(response.error || 'Login failed');
+  }
+
+  return response.accessToken;
+};
 
 export default defineContentScript({
   matches: ['*://*.alibaba.com/*'],
   runAt: 'document_idle',
   main: async () => {
     const hostname = window.location.hostname;
-
-    const tabId = await getCurrentTabId();
-
-    alert(hostname + 'content tabId:' + tabId)
 
     if (hostname.includes('www.alibaba.com')) {
       // 在主页点击注册按钮
@@ -73,20 +86,37 @@ export default defineContentScript({
           logger.error('Failed to find register button:', error);
         });
     } else if (hostname.includes('login.alibaba.com')) {
-      await delay(2000);
+      await delay(5000);
 
       // 从存储中获取当前标签页的 email
-      // email = await getStoredEmail();
-      // console.log('-- content email from storage:', email);
+      const email = await getStoredEmail();
 
-      // if (!email) {
-      //   logger.error('No email found in storage for this tab');
-      //   return;
-      // }
+      const result: {
+        emailName: string,
+        clientId: string,
+        refreshToken: string
+      }[] = Array.from(
+        email.matchAll(
+          /(.*?)----(.*?)----(.*?)----(.*?)\$\$/g
+        ),
+        (match: string[]) => ({
+          emailName: match[1],
+          clientId: match[3],
+          refreshToken: match[4]
+        })
+      )
+
+      console.log('-- result', result)
+
+      if (!email) {
+        logger.error('No email found in storage for this tab');
+        return;
+      }
 
       // 在注册页面填写表单
-      fillRegistrationForm({
-        email: 'qweqwe11@qwq.com',
+      await fillRegistrationForm({
+        email: result[0].emailName,
+        // email: 'jewn241564106@outlook.com',
         password: 'qweqwSqw2313',
         country: 'United States',
         company: 'asaasd',
@@ -97,6 +127,28 @@ export default defineContentScript({
       }).catch((error) => {
         logger.error('Failed to fill registration form:', error);
       });
+
+      await delay(2000);
+
+      await handleRegistrationSlider().catch((error) => {
+        logger.error('Failed to handle registration slider:', error);
+      });
+
+      await delay(15000);
+
+      const verificationCode = await getVerificationCodeFromOutlook(
+        result[0].emailName,
+        result[0].clientId,
+        result[0].refreshToken
+      )
+
+      if (!verificationCode) {
+        throw new Error('未能获取验证码')
+      }
+
+      console.log('-- verificationCode', verificationCode)
+
+      await handleVerificationCode(verificationCode)
     }
   },
 });

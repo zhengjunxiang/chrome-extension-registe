@@ -65,9 +65,8 @@ export const fillRegistrationForm = async (account: Account) => {
     }
 
     await simulateMouseClick('input[name="memberAgreement"]')
-    await delay(1000)
+    await delay(2000)
     await simulateMouseClick('button.RP-form-submit')
-
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : String(err)
     logger.error('填写注册表单失败: ' + errorMessage)
@@ -134,8 +133,42 @@ export const handleVerificationCode = async (verificationCode: string) => {
         .then(async (element) => {
           const registerBtn = element as HTMLButtonElement;
           console.log('-- registerBtn', registerBtn)
-          await delay(6000);
-          registerBtn.click();
+
+          const rect = registerBtn.getBoundingClientRect()
+          const x = rect.left + rect.width / 2
+          const y = rect.top + rect.height / 2
+
+          await delay(2000);
+
+          // 1. Mousedown event
+          registerBtn.dispatchEvent(new MouseEvent('mousedown', {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+            clientX: x,
+            clientY: y
+          }));
+
+          await delay(50); // Small delay between events
+
+          // 2. Mouseup event
+          registerBtn.dispatchEvent(new MouseEvent('mouseup', {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+            clientX: x,
+            clientY: y
+          }));
+
+          // 3. Click event
+          registerBtn.dispatchEvent(new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+            clientX: x,
+            clientY: y
+          }));
+
         })
         .catch((error) => {
           logger.error('Failed to find submit button:', error);

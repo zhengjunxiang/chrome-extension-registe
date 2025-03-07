@@ -8,6 +8,7 @@ export const isUSIp = async () => {
   try {
     const response = await fetch('https://ipinfo.io/json');
     const data = await response.json();
+    console.log('-- isUSIp data', data)
     return data.country === 'US';
   } catch (error) {
     logger.error('获取 IP 地址信息失败:', error);
@@ -16,7 +17,7 @@ export const isUSIp = async () => {
 };
 
 // 获取滑块所在的 iframe
-export const getSliderFrame = async (url: string, maxRetries = 10, delayMs = 2000): Promise<HTMLIFrameElement | null> => {
+export const getSliderFrame = async (url: string, maxRetries = 5, delayMs = 2000): Promise<HTMLIFrameElement | null> => {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     logger.info(`获取滑块 iframe, 第 ${attempt + 1} 次尝试`);
     // 获取所有 iframe 元素

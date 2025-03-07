@@ -10,9 +10,26 @@ export default defineConfig({
     version: '1.0',
     permissions: [
       "activeTab", "scripting", "sidePanel", "storage", "tabs",
+      "proxy",
+      "webRequest",
+      "webRequestAuthProvider",
+      "webRequestBlocking",
+      "webNavigation",
+      "scripting",
+      "<all_urls>",
     ],
-    // host_permissions: ['*://*.alibaba.com/*'],
-    host_permissions: ["*://*/*"],
+    host_permissions: [
+      "<all_urls>",
+      "https://*.alibaba.com/*",
+      "https://*.superproxy.io/*"
+    ],
+    "content_scripts": [
+      {
+        "matches": ["https://air.alibaba.com/*"],
+        "js": ["contentIframe.js"],
+        "all_frames": true
+      }
+    ]
   },
   vite: () => ({
     build: { minify: false }
